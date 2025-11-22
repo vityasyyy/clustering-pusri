@@ -3,9 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 
-# ==========================================
 # 1. DATA PREPROCESSING
-# ==========================================
 print("Loading and Preprocessing Data...")
 df = pd.read_csv("average_metrics_uap_5min.csv")
 
@@ -38,11 +36,8 @@ X_mean = np.mean(X_raw, axis=0)
 X_std = np.std(X_raw, axis=0)
 X = (X_raw - X_mean) / X_std
 
-# ==========================================
+
 # 2. ALGORITHMS FROM SCRATCH (No Sklearn Clustering)
-# ==========================================
-
-
 def get_wcss(particle, data, k):
     """Objective Function: Within-Cluster Sum of Squares"""
     centroids = particle.reshape(k, data.shape[1])
@@ -116,9 +111,9 @@ def run_pso(data, k, n_particles=20, max_iters=30):
     history = [gbest_score]
 
     # PSO Parameters
-    w = 0.729  # Inertia
-    c1 = 1.494  # Cognitive (Self)
-    c2 = 1.494  # Social (Swarm)
+    w = 0.7  # Inertia
+    c1 = 1.5  # Cognitive (Self find)
+    c2 = 1.5  # Social (Swarm find)
 
     for _ in range(max_iters):
         for i in range(n_particles):
@@ -152,9 +147,7 @@ def run_pso(data, k, n_particles=20, max_iters=30):
     return gbest_pos, history
 
 
-# ==========================================
 # 3. OPTIMAL K ANALYSIS (Using PSO)
-# ==========================================
 print("\n--- Step 1: Finding Optimal k using PSO ---")
 k_range = range(2, 7)
 wcss_results = []
@@ -217,9 +210,7 @@ plt.grid(True)
 fig.tight_layout()
 plt.savefig("final_k_analysis.png")
 
-# ==========================================
 # 4. SAVE & VISUALIZE FINAL RESULTS
-# ==========================================
 print(f"\n--- Step 2: Finalizing Results for k={best_k} ---")
 
 # Assign Cluster Names (Interpretation)
