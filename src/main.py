@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
+import seaborn as sns
 
 # Import from our new modules
 from data_loader import load_and_process_data
@@ -87,34 +88,8 @@ cluster_stats = df_clean.groupby("Cluster")[feature_cols].mean()
 print("\nCluster Profiles (Mean Values):")
 print(cluster_stats)
 
-# Visualize Final Clusters (PCA)
-pca = PCA(n_components=2)
-X_pca = pca.fit_transform(X)
-centroids_pca = pca.transform(best_centroids_final)
-
-plt.figure(figsize=(10, 6))
-scatter = plt.scatter(
-    X_pca[:, 0],
-    X_pca[:, 1],
-    c=best_labels_final,
-    cmap="viridis",
-    alpha=0.6,
-    label="Data Points",
-)
-plt.scatter(
-    centroids_pca[:, 0],
-    centroids_pca[:, 1],
-    s=200,
-    c="red",
-    marker="X",
-    label="Centroids",
-)
-plt.title(f"Final PSO Clustering Results (k={best_k})")
-plt.xlabel("Principal Component 1")
-plt.ylabel("Principal Component 2")
-plt.legend()
-plt.colorbar(scatter, label="Cluster ID")
-plt.savefig("../final_clusters_pso_new.png")
+pp = sns.pairplot(df_clean, hue='Cluster', palette='pastel')
+pp.savefig("../final_clusters_pso_new.png")
 print("Saved cluster plot to 'final_clusters_pso.png'")
 
 # Save Data

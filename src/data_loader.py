@@ -15,19 +15,14 @@ def load_and_process_data(filepath="average_metrics_uap_5min.csv"):
 
     # Drop rows with missing 'Core Metrics'
     df_clean = df.dropna(
-        subset=["avg_client_count", "avg_cpu_usage_ratio", "avg_memory_usage_ratio"]
+        subset=["avg_client_count", "avg_cpu_usage_ratio", "avg_memory_usage_ratio", "avg_signal_dbm"]
     ).copy()
-
-    # Impute missing 'Signal Metrics' with Noise Floor (-95 dBm)
-    df_clean["avg_signal_5g_dbm"] = df_clean["avg_signal_5g_dbm"].fillna(-95)
-    df_clean["avg_signal_24g_dbm"] = df_clean["avg_signal_24g_dbm"].fillna(-95)
 
     feature_cols = [
         "avg_client_count",
         "avg_cpu_usage_ratio",
         "avg_memory_usage_ratio",
-        "avg_signal_5g_dbm",
-        "avg_signal_24g_dbm",
+        "avg_signal_dbm",
     ]
 
     # Convert to Numpy and Standardize (Z-Score)
