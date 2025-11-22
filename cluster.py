@@ -83,7 +83,7 @@ def silhouette_score_scratch(data, labels):
     return np.mean(s_scores)
 
 
-def run_pso(data, k, n_particles=20, max_iters=30, tolerance=1e-4):
+def run_pso(data, k, n_particles=20, max_iters=100, tolerance=1e-4):
     """Particle Swarm Optimization for Clustering"""
     dim = k * data.shape[1]
 
@@ -107,9 +107,9 @@ def run_pso(data, k, n_particles=20, max_iters=30, tolerance=1e-4):
     history = [gbest_score]
 
     # PSO Parameters
-    w = 0.791  # Inertia
-    c1 = 1.543  # Cognitive (Self find)
-    c2 = 1.538  # Social (Swarm find)
+    w = 0.7298  # Inertia
+    c1 = 2.05  # Cognitive (Self find)
+    c2 = 2.05  # Social (Swarm find)
 
     prev_score = float("inf")
     for _ in range(max_iters):
