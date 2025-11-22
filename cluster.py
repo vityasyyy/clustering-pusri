@@ -44,8 +44,8 @@ def get_wcss(particle, data, k):
     return np.sum(np.min(distances, axis=1))
 
 
+# calculate all cohesion(distance to own centroid) and separation(distance to other centrooid) of the aps
 def silhouette_score_scratch(data, labels):
-    """Validation Metric: Silhouette Score (Separation vs Cohesion)"""
     n = data.shape[0]
     unique_labels = np.unique(labels)
     if len(unique_labels) < 2:
@@ -83,7 +83,7 @@ def silhouette_score_scratch(data, labels):
     return np.mean(s_scores)
 
 
-def run_pso(data, k, n_particles=20, max_iters=30):
+def run_pso(data, k, n_particles=20, max_iters=30, tolerance=1e-4):
     """Particle Swarm Optimization for Clustering"""
     dim = k * data.shape[1]
 
@@ -111,6 +111,7 @@ def run_pso(data, k, n_particles=20, max_iters=30):
     c1 = 1.543  # Cognitive (Self find)
     c2 = 1.538  # Social (Swarm find)
 
+    prev_score = float("inf")
     for _ in range(max_iters):
         for i in range(n_particles):
             # invoke random factors for exploration
@@ -139,12 +140,20 @@ def run_pso(data, k, n_particles=20, max_iters=30):
                 gbest_score = score
                 gbest_pos = particles[i].copy()
 
+        improvement = abs(prev_score - gbest_score)
+
+        if improvement < tolerance:
+            print("\n--- converged before max iter---")
+            history.append(gbest_score)
+            break
+
+        prev_score = gbest_score
         history.append(gbest_score)
 
     return gbest_pos, history
 
 
-# 3. OPTIMAL K ANALYSIS (Using PSO)
+# 3. run the pso for all k values and determine which one's best to be visualized
 print("\n--- Step 1: Finding Optimal k using PSO ---")
 k_range = range(2, 7)
 wcss_results = []
@@ -156,10 +165,10 @@ best_centroids_final = None
 for k in k_range:
     print(f"Swarm optimizing for k={k}...")
 
-    # 1. Run PSO
+    # 1. Run PSO, we'll get k centroids
     best_centroids_flat, _ = run_pso(X, k)
 
-    # 2. Get Labels
+    # 2. Get Labels (for all access_point, label them based on the smallest dist to which centroids)
     centroids = best_centroids_flat.reshape(k, X.shape[1])
     dists = np.zeros((X.shape[0], k))
     for i, c in enumerate(centroids):
@@ -173,6 +182,7 @@ for k in k_range:
     wcss_results.append(wcss_val)
     silhouette_results.append(sil_val)
 
+    # determine which k value is the best based on the silhouette_score calculation
     if sil_val > best_overall_score:
         best_overall_score = sil_val
         best_k = k
