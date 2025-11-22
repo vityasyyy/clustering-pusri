@@ -8,13 +8,11 @@ print("Loading and Preprocessing Data...")
 df = pd.read_csv("average_metrics_uap_5min.csv")
 
 # Drop rows with missing 'Core Metrics' (Client, CPU, Memory)
-# Justification: We cannot optimize performance for APs that aren't reporting status.
 df_clean = df.dropna(
     subset=["avg_client_count", "avg_cpu_usage_ratio", "avg_memory_usage_ratio"]
 ).copy()
 
 # Impute missing 'Signal Metrics' with Noise Floor (-95 dBm)
-# Justification: Missing signal usually means 'No Signal' / 'Radio Off', not bad data.
 df_clean["avg_signal_5g_dbm"] = df_clean["avg_signal_5g_dbm"].fillna(-95)
 df_clean["avg_signal_24g_dbm"] = df_clean["avg_signal_24g_dbm"].fillna(-95)
 
@@ -31,13 +29,12 @@ feature_cols = [
 X_raw = df_clean[feature_cols].to_numpy(dtype=float)
 
 # Standardization (Z-Score) - ESSENTIAL for distance-based algorithms
-# Justification: CPU is 0-1, Signal is -90 to -30. Scaling makes them comparable.
 X_mean = np.mean(X_raw, axis=0)
 X_std = np.std(X_raw, axis=0)
 X = (X_raw - X_mean) / X_std
 
 
-# 2. ALGORITHMS FROM SCRATCH (No Sklearn Clustering)
+# 2. Algo (No Sklearn Clustering)
 def get_wcss(particle, data, k):
     """Objective Function: Within-Cluster Sum of Squares"""
     centroids = particle.reshape(k, data.shape[1])
@@ -55,7 +52,6 @@ def silhouette_score_scratch(data, labels):
         return 0
 
     s_scores = []
-    # For efficiency on larger datasets, you might sample, but for <1000 rows, full calc is fine.
     for i in range(n):
         point = data[i]
         label = labels[i]
@@ -111,25 +107,26 @@ def run_pso(data, k, n_particles=20, max_iters=30):
     history = [gbest_score]
 
     # PSO Parameters
-    w = 0.7  # Inertia
-    c1 = 1.5  # Cognitive (Self find)
-    c2 = 1.5  # Social (Swarm find)
+    w = 0.791  # Inertia
+    c1 = 1.543  # Cognitive (Self find)
+    c2 = 1.538  # Social (Swarm find)
 
     for _ in range(max_iters):
         for i in range(n_particles):
+            # invoke random factors for exploration
             r1, r2 = np.random.rand(dim), np.random.rand(dim)
 
             # Update Velocity
             velocities[i] = (
-                w * velocities[i]
-                + c1 * r1 * (pbest_pos[i] - particles[i])
-                + c2 * r2 * (gbest_pos - particles[i])
+                w * velocities[i]  # keep moving towards wherever inertia
+                + c1 * r1 * (pbest_pos[i] - particles[i])  # personal influence
+                + c2 * r2 * (gbest_pos - particles[i])  # swarm influence
             )
 
             # Update Position
             particles[i] += velocities[i]
 
-            # Evaluate
+            # Evaluate loss
             score = get_wcss(particles[i], data, k)
 
             # Update Personal Best
@@ -137,10 +134,10 @@ def run_pso(data, k, n_particles=20, max_iters=30):
                 pbest_scores[i] = score
                 pbest_pos[i] = particles[i].copy()
 
-                # Update Global Best
-                if score < gbest_score:
-                    gbest_score = score
-                    gbest_pos = particles[i].copy()
+            # Update Global Best
+            if score < gbest_score:
+                gbest_score = score
+                gbest_pos = particles[i].copy()
 
         history.append(gbest_score)
 
