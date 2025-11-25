@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.decomposition import PCA
 import seaborn as sns
 
 # Import from our new modules
@@ -10,7 +9,6 @@ from pso_clustering import run_pso
 
 # 1. LOAD DATA
 X, df_clean, feature_cols = load_and_process_data("average_metrics_uap_5min.csv")
-
 # 2. FIND OPTIMAL K
 print("\n--- Step 1: Finding Optimal k using PSO ---")
 k_range = range(2, 7)
@@ -88,7 +86,7 @@ cluster_stats = df_clean.groupby("Cluster")[feature_cols].mean()
 print("\nCluster Profiles (Mean Values):")
 print(cluster_stats)
 
-pp = sns.pairplot(df_clean, hue='Cluster', palette='pastel')
+pp = sns.pairplot(df_clean, hue="Cluster", palette="pastel")
 pp.savefig("../final_clusters_pso_new.png")
 print("Saved cluster plot to 'final_clusters_pso.png'")
 

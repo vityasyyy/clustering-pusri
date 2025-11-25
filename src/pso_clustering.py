@@ -14,11 +14,11 @@ def run_pso(data, k, n_particles=20, max_iters=100, tolerance=1e-4):
 
     velocities = np.random.uniform(-0.1, 0.1, (n_particles, dim))
 
-    # Personal Bests
+    # Personal Bests initialization
     pbest_pos = particles.copy()
     pbest_scores = np.array([get_wcss(p, data, k) for p in particles])
 
-    # Global Best
+    # Global Best initialization
     gbest_idx = np.argmin(pbest_scores)
     gbest_pos = pbest_pos[gbest_idx].copy()
     gbest_score = pbest_scores[gbest_idx]
